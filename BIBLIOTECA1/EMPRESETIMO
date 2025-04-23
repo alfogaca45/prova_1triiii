@@ -1,0 +1,44 @@
+import java.time.LocalDate;
+
+public class Emprestimo {
+    private Cliente cliente;
+    private Livro livro;
+    private LocalDate dataEmprestimo;
+    private LocalDate dataDevolucao;
+    private boolean devolvido;
+
+    public Emprestimo(Cliente cliente, Livro livro, LocalDate dataEmprestimo) {
+        this.cliente = cliente;
+        this.livro = livro;
+        this.dataEmprestimo = dataEmprestimo;
+        this.devolvido = false;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public Livro getLivro() {
+        return livro;
+    }
+
+    public LocalDate getDataEmprestimo() {
+        return dataEmprestimo;
+    }
+
+    public LocalDate getDataDevolucao() {
+        return dataDevolucao;
+    }
+
+    public void setDataDevolucao(LocalDate dataDevolucao) {
+        this.dataDevolucao = dataDevolucao;
+    }
+
+    public boolean isDevolvido() {
+        return devolvido;
+    }
+
+    public void setDevolvido(boolean devolvido) {
+        this.devolvido = devolvido;
+    }
+}
