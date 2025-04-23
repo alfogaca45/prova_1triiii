@@ -1,0 +1,112 @@
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BibliotecaPub {
+    private List<Cliente> clientes;
+    private List<Livro> livros;
+    private List<Emprestimo> emprestimos;
+
+    public BibliotecaPub() {
+        this.clientes = new ArrayList<>();
+        this.livros = new ArrayList<>();
+        this.emprestimos = new ArrayList<>();
+    }
+
+    public void cadastrarCliente(Cliente cliente) {
+        clientes.add(cliente);
+    }
+
+    public void cadastrarLivro(Livro livro) {
+        livros.add(livro);
+    }
+
+    public Livro buscarLivroPorTitulo(String titulo) {
+        for (Livro livro : livros) {
+            if (livro.getTitulo().equalsIgnoreCase(titulo)) {
+                return livro;
+            }
+        }
+        return null;
+    }
+
+    public Livro buscarLivroPorAutor(String autor) {
+        for (Livro livro : livros) {
+            if (livro.getAutor().equalsIgnoreCase(autor)) {
+                return livro;
+            }
+        }
+        return null;
+    }
+
+    public boolean realizarEmprestimo(Cliente cliente, Livro livro, LocalDate dataEmprestimo) {
+        if (livro instanceof LivroRaro) {
+            System.out.println("Livros raros não podem ser emprestados!");
+            return false;
+        }
+
+        if (!livro.isDisponivel()) {
+            System.out.println("Livro não disponível para empréstimo!");
+            return false;
+        }
+
+        Emprestimo emprestimo = new Emprestimo(cliente, livro, dataEmprestimo);
+        emprestimos.add(emprestimo);
+        livro.setDisponivel(false);
+        return true;
+    }
+
+    public double realizarDevolucao(Livro livro, LocalDate dataDevolucao) {
+        Emprestimo emprestimoAtivo = null;
+
+        for (Emprestimo emp : emprestimos) {
+            if (emp.getLivro().equals(livro) && !emp.isDevolvido()) {
+                emprestimoAtivo = emp;
+                break;
+            }
+        }
+
+        if (emprestimoAtivo == null) {
+            System.out.println("Este livro não está emprestado atualmente.");
+            return 0.0;
+        }
+
+        emprestimoAtivo.setDevolvido(true);
+        emprestimoAtivo.setDataDevolucao(dataDevolucao);
+        livro.setDisponivel(true);
+
+        long diasAtraso = ChronoUnit.DAYS.between(
+                emprestimoAtivo.getDataEmprestimo().plusDays(7),
+                dataDevolucao
+        );
+
+        if (diasAtraso > 0) {
+            double multa = diasAtraso * 3.50;
+            System.out.println("Multa por atraso: R$ " + multa);
+            return multa;
+        }
+
+        return 0.0;
+    }
+
+    public boolean verificarDisponibilidade(String titulo) {
+        Livro livro = buscarLivroPorTitulo(titulo);
+        if (livro != null) {
+            return livro.isDisponivel() && !(livro instanceof LivroRaro);
+        }
+        return false;
+    }
+
+    public List<Cliente> getClientes() {
+        return clientes;
+    }
+
+    public List<Livro> getLivros() {
+        return livros;
+    }
+
+    public List<Emprestimo> getEmprestimos() {
+        return emprestimos;
+    }
+}

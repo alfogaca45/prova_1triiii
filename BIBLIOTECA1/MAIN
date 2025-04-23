@@ -1,0 +1,286 @@
+import java.time.LocalDate;
+import java.util.Scanner;
+
+public class Main {
+    private static BibliotecaPub biblioteca = new BibliotecaPub();
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        exibirMenuPrincipal();
+    }
+
+    private static void exibirMenuPrincipal() {
+        int opcao;
+        do {
+            System.out.println("\n=== BIBLIOTECAPUB - SISTEMA DE GERENCIAMENTO ===");
+            System.out.println("1. Cadastrar Cliente");
+            System.out.println("2. Cadastrar Livro Comum");
+            System.out.println("3. Cadastrar Livro Raro");
+            System.out.println("4. Realizar Empréstimo");
+            System.out.println("5. Realizar Devolução");
+            System.out.println("6. Consultar Empréstimos");
+            System.out.println("7. Buscar Livro por Título");
+            System.out.println("8. Buscar Livro por Autor");
+            System.out.println("9. Verificar Disponibilidade");
+            System.out.println("0. Sair");
+            System.out.print("Escolha uma opção: ");
+
+            opcao = scanner.nextInt();
+            scanner.nextLine(); // Limpar buffer
+
+            switch (opcao) {
+                case 1:
+                    cadastrarCliente();
+                    break;
+                case 2:
+                    cadastrarLivroComum();
+                    break;
+                case 3:
+                    cadastrarLivroRaro();
+                    break;
+                case 4:
+                    realizarEmprestimo();
+                    break;
+                case 5:
+                    realizarDevolucao();
+                    break;
+                case 6:
+                    consultarEmprestimos();
+                    break;
+                case 7:
+                    buscarLivroPorTitulo();
+                    break;
+                case 8:
+                    buscarLivroPorAutor();
+                    break;
+                case 9:
+                    verificarDisponibilidade();
+                    break;
+                case 0:
+                    System.out.println("Saindo do sistema...");
+                    break;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        } while (opcao != 0);
+    }
+
+    private static void cadastrarCliente() {
+        System.out.println("\n--- CADASTRO DE CLIENTE ---");
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine();
+
+        System.out.print("CPF: ");
+        String cpf = scanner.nextLine();
+
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+
+        Cliente cliente = new Cliente(nome, cpf, email);
+        biblioteca.cadastrarCliente(cliente);
+        System.out.println("Cliente cadastrado com sucesso!");
+    }
+
+    private static void cadastrarLivroComum() {
+        System.out.println("\n--- CADASTRO DE LIVRO COMUM ---");
+        System.out.print("Título: ");
+        String titulo = scanner.nextLine();
+
+        System.out.print("Autor: ");
+        String autor = scanner.nextLine();
+
+        Livro livro = new Livro(titulo, autor);
+        biblioteca.cadastrarLivro(livro);
+        System.out.println("Livro comum cadastrado com sucesso!");
+    }
+
+    private static void cadastrarLivroRaro() {
+        System.out.println("\n--- CADASTRO DE LIVRO RARO ---");
+        System.out.print("Título: ");
+        String titulo = scanner.nextLine();
+
+        System.out.print("Autor: ");
+        String autor = scanner.nextLine();
+
+        System.out.print("Motivo da raridade: ");
+        String motivo = scanner.nextLine();
+
+        LivroRaro livro = new LivroRaro(titulo, autor, motivo);
+        biblioteca.cadastrarLivro(livro);
+        System.out.println("Livro raro cadastrado com sucesso!");
+    }
+
+    private static void realizarEmprestimo() {
+        System.out.println("\n--- REALIZAR EMPRÉSTIMO ---");
+        System.out.print("CPF do cliente: ");
+        String cpf = scanner.nextLine();
+
+        System.out.print("Título do livro: ");
+        String titulo = scanner.nextLine();
+
+        Cliente cliente = buscarClientePorCpf(cpf);
+        if (cliente == null) {
+            System.out.println("Cliente não encontrado!");
+            return;
+        }
+
+        Livro livro = biblioteca.buscarLivroPorTitulo(titulo);
+        if (livro == null) {
+            System.out.println("Livro não encontrado!");
+            return;
+        }
+
+        boolean sucesso = biblioteca.realizarEmprestimo(cliente, livro, LocalDate.now());
+        if (sucesso) {
+            System.out.println("Empréstimo realizado com sucesso!");
+        }
+    }
+
+    private static void realizarDevolucao() {
+        System.out.println("\n--- REALIZAR DEVOLUÇÃO ---");
+        System.out.print("Título do livro: ");
+        String titulo = scanner.nextLine();
+
+        Livro livro = biblioteca.buscarLivroPorTitulo(titulo);
+        if (livro == null) {
+            System.out.println("Livro não encontrado!");
+            return;
+        }
+
+        double multa = biblioteca.realizarDevolucao(livro, LocalDate.now());
+        if (multa > 0) {
+            System.out.printf("Devolução realizada com multa de R$ %.2f%n", multa);
+        } else {
+            System.out.println("Devolução realizada sem multa!");
+        }
+    }
+
+    private static void consultarEmprestimos() {
+        System.out.println("\n--- CONSULTA DE EMPRÉSTIMOS ---");
+        System.out.println("1. Todos os empréstimos");
+        System.out.println("2. Empréstimos ativos");
+        System.out.println("3. Empréstimos de um cliente");
+        System.out.print("Escolha uma opção: ");
+
+        int opcao = scanner.nextInt();
+        scanner.nextLine(); // Limpar buffer
+
+        switch (opcao) {
+            case 1:
+                listarTodosEmprestimos();
+                break;
+            case 2:
+                listarEmprestimosAtivos();
+                break;
+            case 3:
+                listarEmprestimosPorCliente();
+                break;
+            default:
+                System.out.println("Opção inválida!");
+        }
+    }
+
+    private static void listarTodosEmprestimos() {
+        System.out.println("\n--- TODOS OS EMPRÉSTIMOS ---");
+        for (Emprestimo emp : biblioteca.getEmprestimos()) {
+            exibirDetalhesEmprestimo(emp);
+        }
+    }
+
+    private static void listarEmprestimosAtivos() {
+        System.out.println("\n--- EMPRÉSTIMOS ATIVOS ---");
+        for (Emprestimo emp : biblioteca.getEmprestimos()) {
+            if (!emp.isDevolvido()) {
+                exibirDetalhesEmprestimo(emp);
+            }
+        }
+    }
+
+    private static void listarEmprestimosPorCliente() {
+        System.out.print("\nCPF do cliente: ");
+        String cpf = scanner.nextLine();
+
+        Cliente cliente = buscarClientePorCpf(cpf);
+        if (cliente == null) {
+            System.out.println("Cliente não encontrado!");
+            return;
+        }
+
+        System.out.println("\n--- EMPRÉSTIMOS DO CLIENTE " + cliente.getNome() + " ---");
+        for (Emprestimo emp : biblioteca.getEmprestimos()) {
+            if (emp.getCliente().equals(cliente)) {
+                exibirDetalhesEmprestimo(emp);
+            }
+        }
+    }
+
+    private static void exibirDetalhesEmprestimo(Emprestimo emp) {
+        System.out.println("\nLivro: " + emp.getLivro().getTitulo());
+        System.out.println("Cliente: " + emp.getCliente().getNome());
+        System.out.println("Data empréstimo: " + emp.getDataEmprestimo());
+        System.out.println("Status: " + (emp.isDevolvido() ? "Devolvido" : "Ativo"));
+        if (emp.isDevolvido()) {
+            System.out.println("Data devolução: " + emp.getDataDevolucao());
+        }
+    }
+
+    private static void buscarLivroPorTitulo() {
+        System.out.println("\n--- BUSCAR LIVRO POR TÍTULO ---");
+        System.out.print("Título: ");
+        String titulo = scanner.nextLine();
+
+        Livro livro = biblioteca.buscarLivroPorTitulo(titulo);
+        if (livro != null) {
+            exibirDetalhesLivro(livro);
+        } else {
+            System.out.println("Livro não encontrado!");
+        }
+    }
+
+    private static void buscarLivroPorAutor() {
+        System.out.println("\n--- BUSCAR LIVRO POR AUTOR ---");
+        System.out.print("Autor: ");
+        String autor = scanner.nextLine();
+
+        Livro livro = biblioteca.buscarLivroPorAutor(autor);
+        if (livro != null) {
+            exibirDetalhesLivro(livro);
+        } else {
+            System.out.println("Livro não encontrado!");
+        }
+    }
+
+    private static void verificarDisponibilidade() {
+        System.out.println("\n--- VERIFICAR DISPONIBILIDADE ---");
+        System.out.print("Título: ");
+        String titulo = scanner.nextLine();
+
+        boolean disponivel = biblioteca.verificarDisponibilidade(titulo);
+        if (disponivel) {
+            System.out.println("O livro está disponível para empréstimo!");
+        } else {
+            System.out.println("O livro NÃO está disponível para empréstimo.");
+        }
+    }
+
+    private static void exibirDetalhesLivro(Livro livro) {
+        System.out.println("\nTítulo: " + livro.getTitulo());
+        System.out.println("Autor: " + livro.getAutor());
+        System.out.println("Disponível: " + (livro.isDisponivel() ? "Sim" : "Não"));
+        System.out.println("Tipo: " + (livro instanceof LivroRaro ? "Raro" : "Comum"));
+
+        if (livro instanceof LivroRaro) {
+            LivroRaro raro = (LivroRaro) livro;
+            System.out.println("Motivo da raridade: " + raro.getMotivoRaridade());
+        }
+    }
+
+    private static Cliente buscarClientePorCpf(String cpf) {
+        for (Cliente cliente : biblioteca.getClientes()) {
+            if (cliente.getCpf().equals(cpf)) {
+                return cliente;
+            }
+        }
+        return null;
+    }
+}
